@@ -108,19 +108,6 @@ export class UploadImageComponent {
 	}
 
 
-	onImageClick(event: any) {
-		// Calculate the coordinates of the click event relative to the image
-		const imageRect = event.target.getBoundingClientRect();
-		const x = event.clientX - imageRect.left;
-		const y = event.clientY - imageRect.top;
-		// Calculate the indexes based on the coordinates of the click event
-		const i = Math.floor(y / this.imageStruct.height * this.imageStruct.data.length);
-		const j = Math.floor(x / this.imageStruct.width * this.imageStruct.data[0].length);
-		// prints to console the indexes
-		console.log(`Indexes: (${i}, ${j})`);
-	}
-
-
 	calculateLinePixels(currX: number, currY: number) {
 		const dx = Math.abs(currX - this.startX);
 		const dy = Math.abs(currY - this.startY);
@@ -143,7 +130,6 @@ export class UploadImageComponent {
 				this.startY += sy;
 			}
 		}
-		console.log(this.lineIndices.toString);
 	  }
 
 	onMouseDown(event: MouseEvent) {
@@ -159,14 +145,6 @@ export class UploadImageComponent {
 		this.startY = currY;
 		this.isDrawing = true;
 	}
-
-	// onMouseMove(event: MouseEvent) {
-	// 	if (this.isDrawing) {
-	// 	  this.ctx.moveTo(this.startX, this.startY);
-	// 	  this.ctx.lineTo(event.offsetX, event.offsetY);
-	// 	  this.ctx.stroke();
-	// 	}
-	// }
 
 	onMouseUp(event: MouseEvent) {
 		// this.isDrawing = false;
