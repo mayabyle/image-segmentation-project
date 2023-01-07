@@ -21,8 +21,8 @@ export class UploadImageComponent {
 	// @ViewChild('myCanvas') canvas: ElementRef<HTMLCanvasElement> = new ElementRef<HTMLCanvasElement>(document.createElement('canvas'));
 	// ctx: CanvasRenderingContext2D |null= this.canvas.nativeElement.getContext('2d');
 	// canvas = this.elementRef.nativeElement.querySelector('#canvas');
-	canvas : any;
-	ctx : any;
+	canvas: any;
+	ctx: any;
 	isDrawing: boolean = false;
 	startX: number = 0;
 	startY: number = 0;
@@ -36,9 +36,6 @@ export class UploadImageComponent {
 	ngAfterViewInit() {
 		this.canvas = document.getElementById('canvas') as HTMLCanvasElement;
 		this.ctx = this.canvas.getContext('2d');
-		this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-		this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-		this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
 	}
 
 	// Triggered as a response to an image upload
@@ -56,6 +53,7 @@ export class UploadImageComponent {
 		let reader = new FileReader();
 		
 		this.selectedFile = event.target.files[0];
+		this.isDrawing = false;
 		
 		// Wait for the image to load
 		reader.onload = (_event) => {
@@ -67,10 +65,10 @@ export class UploadImageComponent {
 				this.canvas.width = image.naturalWidth;  //TO FIX
 				this.canvas.height = image.naturalHeight;
 				if (this.ctx != null) {
-					// this.ctx.moveTo(0, 0);
-					// this.ctx.lineTo(100, 100);
-					// this.ctx.stroke();
 					this.ctx.drawImage(image, 0, 0);	
+					this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+					// this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+					this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
 				}
 			}
 		}
@@ -79,6 +77,7 @@ export class UploadImageComponent {
 
 
 	getData() {
+		this.isDrawing = false;
 		this.returnedImage_bytes = this.http.post('http://127.0.0.1:5000/data', this.selectedFile)
 		.subscribe(imageData => {
 			console.log(imageData); 
@@ -121,21 +120,26 @@ export class UploadImageComponent {
 
 
 	onMouseDown(event: MouseEvent) {
-		this.isDrawing = true;
+		if(this.isDrawing) {
+			this.ctx.moveTo(this.startX, this.startY);
+		  	this.ctx.lineTo(event.offsetX, event.offsetY);
+			  this.ctx.stroke();
+		}
 		this.startX = event.offsetX;
 		this.startY = event.offsetY;
+		this.isDrawing = true;
 	}
 
-	onMouseMove(event: MouseEvent) {
-		if (this.isDrawing) {
-		  this.ctx.moveTo(this.startX, this.startY);
-		  this.ctx.lineTo(event.offsetX, event.offsetY);
-		  this.ctx.stroke();
-		}
-	}
+	// onMouseMove(event: MouseEvent) {
+	// 	if (this.isDrawing) {
+	// 	  this.ctx.moveTo(this.startX, this.startY);
+	// 	  this.ctx.lineTo(event.offsetX, event.offsetY);
+	// 	  this.ctx.stroke();
+	// 	}
+	// }
 
 	onMouseUp(event: MouseEvent) {
-		this.isDrawing = false;
+		// this.isDrawing = false;
 	}
 
 
