@@ -158,6 +158,17 @@ export class UploadImageComponent {
 
 
 
+// onImageClick(event: any) {
+// 	// Calculate the coordinates of the click event relative to the image
+// 	const imageRect = event.target.getBoundingClientRect();
+// 	const x = event.clientX - imageRect.left;
+// 	const y = event.clientY - imageRect.top;
+// 	// Calculate the indexes based on the coordinates of the click event
+// 	const i = Math.floor(y / this.imageStruct.height * this.imageStruct.data.length);
+// 	const j = Math.floor(x / this.imageStruct.width * this.imageStruct.data[0].length);
+// 	// prints to console the indexes
+// 	console.log(`Indexes: (${i}, ${j})`);
+// }
 
 
 	//NOT USED
@@ -196,36 +207,6 @@ export class UploadImageComponent {
 	// 	});
 	// }
 
-
-
-	//   onMouseDown(event: MouseEvent) {
-	// 	console.log("5")
-	// 	this.isDrawing = true;
-	// 	this.startX = event.offsetX;
-	// 	this.startY = event.offsetY;
-	//   }
-	
-	//   onMouseMove(event: MouseEvent) {
-	// 	console.log("6")
-	// 	if (!this.isDrawing) {
-	// 	  return;
-	// 	}
-	// 	if (this.ctx !=undefined){
-	// 		this.ctx.beginPath();
-	// 		this.ctx.moveTo(this.startX, this.startY);
-	// 		this.ctx.lineTo(event.offsetX, event.offsetY);
-	// 		this.ctx.stroke();
-	// 		this.startX = event.offsetX;
-	// 		this.startY = event.offsetY;
-	// 		this.pixels.push([event.offsetX, event.offsetY]);
-	// 	}
-		
-	//   }
-	
-	//   onMouseUp(event: MouseEvent) {
-	// 	console.log("7")
-	// 	this.isDrawing = false
-	//   }
 
 // 	  getData2(){
 		
