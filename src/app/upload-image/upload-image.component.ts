@@ -17,7 +17,6 @@ export class UploadImageComponent {
 	image: HTMLImageElement = new Image();
 	imageStruct = { width: 1, height: 1, data: [[1]] };
 
-	// pixels: number[][] =[];
 	// @ViewChild('myCanvas') canvas: ElementRef<HTMLCanvasElement> = new ElementRef<HTMLCanvasElement>(document.createElement('canvas'));
 	// ctx: CanvasRenderingContext2D |null= this.canvas.nativeElement.getContext('2d');
 	// canvas = this.elementRef.nativeElement.querySelector('#canvas');
@@ -26,6 +25,7 @@ export class UploadImageComponent {
 	isDrawing: boolean = false;
 	startX: number = 0;
 	startY: number = 0;
+	lineIndices: number[][] =[];
 	
 	returnedImage_bytes : any
 	imageUrl: any
@@ -54,6 +54,7 @@ export class UploadImageComponent {
 		
 		this.selectedFile = event.target.files[0];
 		this.isDrawing = false;
+		this.lineIndices = [];
 		
 		// Wait for the image to load
 		reader.onload = (_event) => {
@@ -78,6 +79,7 @@ export class UploadImageComponent {
 
 	getData() {
 		this.isDrawing = false;
+		this.http.post('http://127.0.0.1:5000/indices', this.lineIndices).subscribe();  // Sending to server the new indices
 		this.returnedImage_bytes = this.http.post('http://127.0.0.1:5000/data', this.selectedFile)
 		.subscribe(imageData => {
 			console.log(imageData); 
@@ -119,14 +121,42 @@ export class UploadImageComponent {
 	}
 
 
+	calculateLinePixels(currX: number, currY: number) {
+		const dx = Math.abs(currX - this.startX);
+		const dy = Math.abs(currY - this.startY);
+		const sx = (this.startX < currX) ? 1 : -1;
+		const sy = (this.startY < currY) ? 1 : -1;
+		let err = dx - dy;
+	
+		while (true) {
+			this.lineIndices.push([this.startX, this.startY]);
+			if (this.startX === currX && this.startY === currY) {
+				break;
+			}
+			const e2 = 2 * err;
+			if (e2 > -dy) {
+				err -= dy;
+				this.startX += sx;
+			}
+			if (e2 < dx) {
+				err += dx;
+				this.startY += sy;
+			}
+		}
+		console.log(this.lineIndices.toString);
+	  }
+
 	onMouseDown(event: MouseEvent) {
+		const currX = event.offsetX
+		const currY = event.offsetY
 		if(this.isDrawing) {
 			this.ctx.moveTo(this.startX, this.startY);
-		  	this.ctx.lineTo(event.offsetX, event.offsetY);
-			  this.ctx.stroke();
+		  	this.ctx.lineTo(currX, currY);
+			this.ctx.stroke();
+			this.calculateLinePixels(currX, currY);
 		}
-		this.startX = event.offsetX;
-		this.startY = event.offsetY;
+		this.startX = currX;
+		this.startY = currY;
 		this.isDrawing = true;
 	}
 
