@@ -1,0 +1,21 @@
+<html>
+<head>
+    <link rel="style sheet" herf="upload-image.component.css">
+</head>
+    <body>
+    
+        <div class="container" id="imgBox" style="text-align:center">
+            <div [innerHtml]="msg" *ngIf="msg" style="color: red;"></div>
+            <p>
+                <input type="file" id="file" name="img" style="display: none" (change)="selectFile($event)" />
+                <label for="file"><img src="assets/upload.png" width="150" height="100" class="upload-icon"></label>
+            </p>
+            <div><img [src]="url" *ngIf="url" (click)="onImageClick($event)" alt="Image"></div>
+        
+            <input type="button" value="SendData" (click) = "getData()"><br/><br/>
+            <div><img [src]="imageUrl" *ngIf="imageUrl" /></div>
+        </div>
+        <canvas id="canvas" style="border: 1px solid"></canvas>
+        <script src="src\app\upload-image\upload-image.component.ts"></script>
+    </body>
+</html>

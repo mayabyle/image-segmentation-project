@@ -1,0 +1,13 @@
+
+img {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+  }
+
+.upload-icon{
+    left: 50%;
+    width: 100%;
+    max-width: 150px;
+    cursor: pointer;
+}
