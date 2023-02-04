@@ -17,9 +17,6 @@ export class UploadImageComponent {
 	image: HTMLImageElement = new Image();
 	imageStruct = { width: 1, height: 1, data: [[1]] };
 
-	// @ViewChild('myCanvas') canvas: ElementRef<HTMLCanvasElement> = new ElementRef<HTMLCanvasElement>(document.createElement('canvas'));
-	// ctx: CanvasRenderingContext2D |null= this.canvas.nativeElement.getContext('2d');
-	// canvas = this.elementRef.nativeElement.querySelector('#canvas');
 	canvas: any;
 	ctx: any;
 	isDrawing: boolean = false;
@@ -146,10 +143,6 @@ export class UploadImageComponent {
 		this.isDrawing = true;
 	}
 
-	onMouseUp(event: MouseEvent) {
-		// this.isDrawing = false;
-	}
-
 
 }
 
@@ -158,69 +151,3 @@ export class UploadImageComponent {
 
 
 
-// onImageClick(event: any) {
-// 	// Calculate the coordinates of the click event relative to the image
-// 	const imageRect = event.target.getBoundingClientRect();
-// 	const x = event.clientX - imageRect.left;
-// 	const y = event.clientY - imageRect.top;
-// 	// Calculate the indexes based on the coordinates of the click event
-// 	const i = Math.floor(y / this.imageStruct.height * this.imageStruct.data.length);
-// 	const j = Math.floor(x / this.imageStruct.width * this.imageStruct.data[0].length);
-// 	// prints to console the indexes
-// 	console.log(`Indexes: (${i}, ${j})`);
-// }
-
-
-	//NOT USED
-	// getImageData(image: File): Promise<{ width: number, height: number, data: number[][] }> {
-	// 	return new Promise((resolve, reject) => {
-	// 	  let canvas = document.createElement('canvas');
-	// 	  let ctx = canvas.getContext('2d');
-	// 	  const img = new Image();
-	// 	  img.onload = () => {
-	// 		if(ctx != null) {
-	// 			ctx.drawImage(img, 0, 0);
-	// 			const imageData = ctx.getImageData(0, 0, img.width, img.height);
-	// 			const data : number[][] = new Array(imageData.height);
-	// 			for (let i = 0; i < imageData.height; i++) {
-	// 			data[i] = new Array(imageData.width);
-	// 				for (let j = 0; j < imageData.width; j++) {
-	// 					const index = (i * imageData.width + j) * 4;
-	// 					data[i][j] = imageData.data[index];
-	// 				}
-	// 			}
-	// 			this.imageStruct.data = data
-	// 			this.imageStruct.height = imageData.height
-	// 			this.imageStruct.width = imageData.width
-
-	// 			resolve({
-	// 				width: imageData.width,
-	// 				height: imageData.height,
-	// 				data: data
-	// 			});
-	// 		}
-	// 	  };
-	// 	  img.onerror = (error) => {
-	// 		reject(error);
-	// 	  };
-	// 	  img.src = URL.createObjectURL(image);
-	// 	});
-	// }
-
-
-// 	  getData2(){
-		
-// 		const uploadData = new FormData();
-// 		uploadData.append('myFile', this.selectedFile, "my_img");
-// 		this.http.post('http://127.0.0.1:5000/data', uploadData , { responseType: 'text' })
-// 		.subscribe(imageData => {
-// 			// Display the image using the <img> element
-// 			const imageElement = document.getElementById('image');
-			
-// 		  },
-// 		  error => {
-// 			console.log(error);
-// 		  });
-	
-
-//   }
