@@ -10,22 +10,24 @@ import { Component , ViewChild, ElementRef, Renderer2} from '@angular/core';
 
 export class UploadImageComponent {
 
+	// Uploaded Image
 	url: any; 
 	msg = "";
 	selectedFile: any
-
-	image: HTMLImageElement = new Image();
-	imageStruct = { width: 1, height: 1, data: [[1]] };
-
+	image : HTMLImageElement | undefined;
+	// Canvas and Lines
 	canvas: any;
 	ctx: any;
 	isDrawing: boolean = false;
 	startX: number = 0;
 	startY: number = 0;
-	lineIndices: number[][] =[];
-	
+	lines: number[][] = [];
+	currLineIndices: number[][] = [];
+	lineSeqSum : number = 0;
+	// Returned Image
 	returnedImage_bytes : any
 	imageUrl: any
+	scale : any = 1;
 
 	constructor(private http: HttpClient ,private elementRef: ElementRef, private renderer: Renderer2) {}
 
@@ -51,23 +53,23 @@ export class UploadImageComponent {
 		
 		this.selectedFile = event.target.files[0];
 		this.isDrawing = false;
-		this.lineIndices = [];
+		this.currLineIndices = [];
 		
 		// Wait for the image to load
 		reader.onload = (_event) => {
-			var image = new Image();   // MAYA
-  			image.src = URL.createObjectURL(event.target.files[0]);   // MAYA
+			var image = new Image();
+  			image.src = URL.createObjectURL(event.target.files[0]);
 			this.msg = "";
 			this.url = reader.result; 
 			image.onload = () => {  // Adjust the canvas size
-				this.canvas.width = image.naturalWidth;  //TO FIX
+				this.returnedImage_bytes = this.http.post('http://127.0.0.1:5000/data', this.selectedFile).subscribe();
+				this.canvas.width = image.naturalWidth; 
 				this.canvas.height = image.naturalHeight;
 				if (this.ctx != null) {
 					this.ctx.drawImage(image, 0, 0);	
 					this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-					// this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-					this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
 				}
+				this.image = image;  //NEW
 			}
 		}
 		reader.readAsDataURL(event.target.files[0]);  //reads the file as a Data URL and triggers the onload event.
@@ -76,11 +78,11 @@ export class UploadImageComponent {
 
 	getData() {
 		this.isDrawing = false;
-		this.http.post('http://127.0.0.1:5000/indices', this.lineIndices).subscribe();  // Sending to server the new indices
-		this.returnedImage_bytes = this.http.post('http://127.0.0.1:5000/data', this.selectedFile)
-		.subscribe(imageData => {
-			console.log(imageData); 
-			this.show_new_image(imageData)
+		this.http.post('http://127.0.0.1:5000/indices', this.currLineIndices)  // Sending to server the new indices
+		.subscribe(returnedImageData => {
+			this.currLineIndices = [];
+			console.log(returnedImageData); 
+			this.show_new_image(returnedImageData)
 		});
 	}
 
@@ -105,49 +107,85 @@ export class UploadImageComponent {
 	}
 
 
-	calculateLinePixels(currX: number, currY: number) {
-		const dx = Math.abs(currX - this.startX);
-		const dy = Math.abs(currY - this.startY);
-		const sx = (this.startX < currX) ? 1 : -1;
-		const sy = (this.startY < currY) ? 1 : -1;
+	calculateLinePixels(startX: number, startY: number, endX: number, endY: number) {
+		const dx = Math.abs(endX - startX);
+		const dy = Math.abs(endY - startY);
+		const sx = (startX < endX) ? 1 : -1;
+		const sy = (startY < endY) ? 1 : -1;
 		let err = dx - dy;
-	
+
 		while (true) {
-			this.lineIndices.push([this.startX, this.startY]);
-			if (this.startX === currX && this.startY === currY) {
+			this.currLineIndices.push([startX, startY]);
+			if (startX === endX && startY === endY) {
 				break;
 			}
 			const e2 = 2 * err;
 			if (e2 > -dy) {
 				err -= dy;
-				this.startX += sx;
+				startX += sx;
 			}
 			if (e2 < dx) {
 				err += dx;
-				this.startY += sy;
+				startY += sy;
 			}
 		}
 	  }
+
+	drawLine(startX: number, startY: number, endX: number, endY: number) {
+		this.ctx.moveTo(startX, startY);
+		this.ctx.lineTo(endX, endY);
+		this.ctx.stroke();
+		this.calculateLinePixels(startX, startY, endX, endY);
+		this.lineSeqSum++;
+	}
 
 	onMouseDown(event: MouseEvent) {
 		const currX = event.offsetX
 		const currY = event.offsetY
 		if(this.isDrawing) {
-			this.ctx.moveTo(this.startX, this.startY);
-		  	this.ctx.lineTo(currX, currY);
-			this.ctx.stroke();
-			this.calculateLinePixels(currX, currY);
+			this.drawLine(this.startX, this.startY, currX, currY);
+			this.lines.push([this.startX, this.startY, currX, currY]);
 		}
+		else 
+			this.lineSeqSum = 0;   // New
 		this.startX = currX;
 		this.startY = currY;
 		this.isDrawing = true;
 	}
 
 
+	zoomIn() {
+		this.scale += 0.1;
+	}
+	
+	zoomOut() {
+		this.scale -= 0.1;
+	}
+
+	undo(){
+		this.http.get('http://127.0.0.1:5000/undo').
+		subscribe(returnedImageData => {
+			console.log(returnedImageData); 
+			this.show_new_image(returnedImageData)
+		});
+		this.undoCanvas();  // NEW
+	}
+
+	undoCanvas() {   // NEW
+		this.isDrawing = false;
+		console.log('lines length ' + this.lines.length);   //TO DELETE
+		for (let i=0; i<this.lineSeqSum; i++) {
+			this.lines.pop();
+			console.log('pop number ' + i);   //TO DELETE
+		}
+		for (let i=0; i<this.lines.length; i++) {   //TO DELETE
+			console.log(this.lines[i][0], this.lines[i][1], this.lines[i][2], this.lines[i][3]);
+		}
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.ctx.drawImage(this.image, 0, 0);
+		for (let i=0; i<this.lines.length-1; i++) 
+			this.drawLine(this.lines[i][0], this.lines[i][1], this.lines[i][2], this.lines[i][3]);
+	}
+
 }
-
-
-
-
-
 
